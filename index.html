@@ -2,34 +2,66 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Paris Phrasebook</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<meta name="description" content="French phrases for Paris. Tap a phrase to hear it, show the French line to someone else, and call 112, 17, or 15.">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#c0392b">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap">
 <style>
   :root {
     --cream: #f5f0e8;
     --dark: #1a1612;
     --rouge: #c0392b;
     --gold: #c9a84c;
-    --muted: #8a7f72;
+    --muted: #5c564e;
     --card: #fff;
     --border: #e0d8cc;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { color-scheme: light; }
+  [hidden] { display: none !important; }
 
   body {
     background: var(--cream);
     color: var(--dark);
-    font-family: 'DM Sans', sans-serif;
+    font-family: "DM Sans", "Segoe UI", sans-serif;
     min-height: 100vh;
-    padding: 40px 20px 60px;
+    padding-bottom: 48px;
   }
 
-  header {
-    text-align: center;
-    margin-bottom: 48px;
+  body.show-open { overflow: hidden; }
+
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+
+  :focus { outline: none; }
+  :focus-visible {
+    outline: 2px solid var(--rouge);
+    outline-offset: 3px;
   }
+
+  .skip {
+    position: absolute;
+    left: 16px;
+    top: 8px;
+    transform: translateY(-150%);
+    background: var(--card);
+    color: var(--dark);
+    padding: 10px 14px;
+    z-index: 40;
+    border-radius: 8px;
+    text-decoration: none;
+  }
+  .skip:focus { transform: none; }
+
+  .header-inner, .shell { max-width: 620px; margin: 0 auto; }
+  .header-inner { padding: 32px 20px 8px; text-align: center; }
+  .shell { padding: 20px 20px 0; }
 
   .flag {
     font-size: 2.4rem;
@@ -38,23 +70,20 @@
   }
 
   header h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.8rem;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(2rem, 8vw, 2.8rem);
     font-weight: 700;
     letter-spacing: -0.5px;
     line-height: 1.1;
   }
 
-  header h1 em {
-    font-style: italic;
-    color: var(--rouge);
-  }
+  header h1 em { font-style: italic; color: var(--rouge); }
 
   header p {
     color: var(--muted);
     font-size: 0.9rem;
     margin-top: 10px;
-    font-weight: 300;
+    font-weight: 400;
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
@@ -66,36 +95,98 @@
     margin: 14px auto 0;
   }
 
+  .emergency-bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 2px 4px;
+    background: var(--rouge);
+    padding: 4px 12px;
+    padding-top: max(4px, env(safe-area-inset-top));
+  }
+
+  .emergency-bar a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .emergency-bar a.em-main { font-weight: 600; }
+  .emergency-bar a:hover { background: rgba(255, 255, 255, 0.12); }
+  .emergency-bar a:focus-visible { outline-color: #fff; }
+
+  .update-banner {
+    max-width: 620px;
+    margin: 16px auto 0;
+    padding: 0 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+  }
+
+  .update-banner p { font-size: 0.9rem; }
+  .update-banner button {
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 1.5px solid var(--rouge);
+    background: transparent;
+    color: var(--rouge);
+    font-weight: 500;
+  }
+
+  .search { display: grid; gap: 6px; margin-bottom: 22px; }
+  .search label { font-size: 0.82rem; font-weight: 500; color: var(--muted); }
+  .search input {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    background: var(--card);
+  }
+
+  .layout { display: block; }
+
   .tabs {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     justify-content: center;
-    margin-bottom: 32px;
+    margin-bottom: 28px;
   }
 
   .tab {
-    padding: 8px 18px;
+    min-height: 44px;
+    padding: 0 18px;
     border: 1.5px solid var(--border);
     background: transparent;
-    border-radius: 100px;
-    font-family: 'DM Sans', sans-serif;
+    border-radius: 999px;
     font-size: 0.82rem;
     font-weight: 500;
     letter-spacing: 0.04em;
-    cursor: pointer;
     color: var(--muted);
-    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
   }
 
   .tab:hover { border-color: var(--rouge); color: var(--rouge); }
-  .tab.active { background: var(--rouge); border-color: var(--rouge); color: #fff; }
-
-  .section { display: none; }
-  .section.active { display: block; }
+  .tab[aria-current="true"] { background: var(--rouge); border-color: var(--rouge); color: #fff; }
 
   .section-title {
-    font-family: 'Playfair Display', serif;
+    font-family: "Playfair Display", Georgia, serif;
     font-size: 1.4rem;
     font-weight: 400;
     font-style: italic;
@@ -105,79 +196,140 @@
     border-bottom: 1px solid var(--border);
   }
 
-  .phrases {
-    display: grid;
-    gap: 12px;
+  .result-label {
+    font-family: "Playfair Display", Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.05rem;
+    color: var(--muted);
+    margin: 8px 0 4px;
   }
+
+  .phrases { display: grid; gap: 12px; }
 
   .phrase-card {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 16px 18px;
-    display: flex;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    grid-template-areas:
+      "play text"
+      "play actions"
+      "warn warn";
+    column-gap: 14px;
+    row-gap: 2px;
     align-items: center;
-    gap: 16px;
-    transition: box-shadow 0.2s, transform 0.2s;
   }
 
-  .phrase-card:hover {
-    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
-    transform: translateY(-1px);
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .phrase-card { transition: box-shadow 0.2s, transform 0.2s; }
+    .phrase-card:hover {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+      transform: translateY(-1px);
+    }
   }
+
+  .phrase-card.speaking { border-color: var(--gold); }
 
   .play-btn {
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
+    grid-area: play;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: var(--rouge);
     border: none;
-    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s, transform 0.1s;
-    color: white;
+    color: #fff;
   }
 
   .play-btn:hover { background: #a93226; }
-  .play-btn:active { transform: scale(0.94); }
 
-  .play-btn.speaking {
+  .phrase-card.speaking .play-btn {
     background: var(--gold);
-    animation: pulse 0.8s ease-in-out infinite alternate;
+    color: var(--dark);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .phrase-card.speaking .play-btn { animation: pulse 0.8s ease-in-out infinite alternate; }
   }
 
   @keyframes pulse {
-    from { box-shadow: 0 0 0 0 rgba(201,168,76,0.4); }
-    to { box-shadow: 0 0 0 8px rgba(201,168,76,0); }
+    from { box-shadow: 0 0 0 0 rgba(201, 168, 76, 0.4); }
+    to { box-shadow: 0 0 0 8px rgba(201, 168, 76, 0); }
   }
 
   .play-icon { width: 14px; height: 14px; }
 
-  .phrase-text { flex: 1; }
+  .phrase-hit {
+    grid-area: text;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 2px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-height: 44px;
+    justify-content: center;
+  }
 
   .french {
-    font-family: 'Playfair Display', serif;
+    font-family: "Playfair Display", Georgia, serif;
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--dark);
-    margin-bottom: 3px;
+    overflow-wrap: break-word;
   }
 
   .pronunciation {
     font-size: 0.78rem;
     color: var(--rouge);
     font-style: italic;
-    margin-bottom: 4px;
-    font-weight: 400;
   }
 
-  .english {
+  .english { font-size: 0.82rem; color: var(--muted); }
+
+  .card-actions {
+    grid-area: actions;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 4px;
+  }
+
+  .text-btn {
+    min-height: 44px;
+    padding: 0 8px;
+    border: none;
+    background: none;
+    color: var(--rouge);
     font-size: 0.82rem;
-    color: var(--muted);
-    font-weight: 400;
+    font-weight: 500;
+  }
+
+  .text-btn[aria-pressed="true"] { color: var(--dark); }
+
+  .play-status {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--rouge);
+    font-weight: 500;
+    padding-right: 4px;
+  }
+
+  .play-status:empty { display: none; }
+
+  .voice-warn {
+    grid-area: warn;
+    color: var(--rouge);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    padding-top: 4px;
   }
 
   .tip-box {
@@ -193,235 +345,586 @@
 
   .tip-box strong { font-weight: 600; }
 
-  .no-speech {
-    display: none;
+  .voice-banner, .load-error {
     background: #fff3f3;
     border: 1px solid #f5c6c6;
     border-radius: 10px;
     padding: 12px 16px;
-    font-size: 0.82rem;
+    font-size: 0.9rem;
     color: var(--rouge);
     margin-bottom: 20px;
-    text-align: center;
+    line-height: 1.45;
   }
 
-  .container { max-width: 620px; margin: 0 auto; }
+  .empty { color: var(--muted); margin-bottom: 12px; }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: #000;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 80px 24px 96px;
+  }
+
+  .overlay:focus-visible { outline: none; }
+
+  .overlay-play {
+    position: absolute;
+    top: max(16px, env(safe-area-inset-top));
+    right: 16px;
+  }
+
+  .overlay .play-btn { background: transparent; border: 1.5px solid #fff; }
+  .overlay.speaking .play-btn { background: var(--gold); color: var(--dark); border-color: var(--gold); }
+
+  .show-french {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(2.5rem, 10vw, 4.5rem);
+    font-weight: 700;
+    line-height: 1.15;
+    max-width: 18ch;
+    overflow-wrap: break-word;
+  }
+
+  .show-pron {
+    margin-top: 18px;
+    color: #ffb4a8;
+    font-style: italic;
+    font-size: 1rem;
+  }
+
+  .show-english {
+    margin-top: 8px;
+    color: #f5f0e8;
+    font-size: 1rem;
+  }
+
+  .overlay .voice-warn { color: #ffb4a8; margin-top: 20px; max-width: 28rem; }
+
+  .overlay-actions {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .overlay-actions button {
+    min-height: 44px;
+    padding: 0 14px;
+    border: none;
+    background: none;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .overlay-actions button:focus-visible,
+  .overlay .play-btn:focus-visible { outline-color: #fff; }
+
+  @media (min-width: 900px) {
+    .header-inner, .shell, .update-banner { max-width: 960px; }
+    .layout {
+      display: grid;
+      grid-template-columns: 12.5rem minmax(0, 1fr);
+      gap: 8px 36px;
+      align-items: start;
+    }
+    .tabs {
+      position: sticky;
+      top: 68px;
+      flex-direction: column;
+      align-items: stretch;
+      margin: 0;
+    }
+    .tab { justify-content: flex-start; }
+  }
 </style>
 </head>
 <body>
-<div class="container">
-  <header>
-    <span class="flag">🇫🇷</span>
+<a class="skip" href="#main">Skip to content</a>
+<header>
+  <div class="header-inner">
+    <span class="flag" aria-hidden="true">🇫🇷</span>
     <h1>Paris <em>Phrasebook</em></h1>
     <p>Tap any phrase to hear it spoken</p>
     <div class="divider"></div>
-  </header>
-
-  <div class="no-speech" id="noSpeech">
-    ⚠️ Your browser doesn't support text-to-speech. Try Chrome or Safari.
   </div>
-
-  <div class="tabs">
-    <button class="tab active" onclick="showSection('greetings', event)">👋 Greetings</button>
-    <button class="tab" onclick="showSection('food', event)">🍽️ Food & Dining</button>
-    <button class="tab" onclick="showSection('directions', event)">🗺️ Directions</button>
-    <button class="tab" onclick="showSection('shopping', event)">🛍️ Shopping</button>
-    <button class="tab" onclick="showSection('numbers', event)">🔢 Numbers</button>
-    <button class="tab" onclick="showSection('emergency', event)">🆘 Emergency</button>
+</header>
+<div id="update-banner" class="update-banner" hidden>
+  <p>A new version is ready.</p>
+  <button type="button" id="update-reload">Reload</button>
+</div>
+<main id="main" tabindex="-1">
+  <nav class="emergency-bar" id="emergency-bar" aria-label="Emergency calls">
+    <a class="em-main" href="tel:112" aria-label="Call Emergency 112">Emergency 112</a>
+    <a href="tel:17" aria-label="Call 17 police">17 police</a>
+    <a href="tel:15" aria-label="Call 15 ambulance">15 ambulance</a>
+  </nav>
+  <div class="shell">
+    <noscript><p class="voice-banner">Phrases need JavaScript. The emergency numbers above still call.</p></noscript>
+    <p id="load-error" class="load-error" hidden>The phrase list could not be loaded. The emergency numbers above still call.</p>
+    <form class="search" role="search" id="search-form">
+      <label for="search">Search</label>
+      <input id="search" type="search" placeholder="French or English" autocomplete="off">
+    </form>
+    <p id="voice-banner" class="voice-banner" role="status" hidden></p>
+    <div class="layout">
+      <nav class="tabs" id="categories" aria-label="Categories"></nav>
+      <div>
+        <h2 class="section-title" id="section-title" tabindex="-1">Greetings &amp; Pleasantries</h2>
+        <p id="empty" class="empty" hidden>No phrases match that search.</p>
+        <div class="phrases" id="phrase-list"></div>
+        <div class="tip-box" id="tip" hidden></div>
+      </div>
+    </div>
   </div>
-
-  <!-- GREETINGS -->
-  <div class="section active" id="greetings">
-    <div class="section-title">Greetings & Pleasantries</div>
-    <div class="phrases" id="phrases-greetings"></div>
-    <div class="tip-box">💡 <strong>Always say Bonjour</strong> when entering any shop, café, or restaurant — and <em>Au revoir</em> when you leave. It's the #1 cultural rule.</div>
+</main>
+<div id="show-overlay" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="show-french" tabindex="-1">
+  <button type="button" class="play-btn overlay-play" id="show-play" aria-label="Play">
+    <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+  </button>
+  <p id="show-french" class="show-french" lang="fr"></p>
+  <div id="show-extra" hidden>
+    <p id="show-pron" class="show-pron"></p>
+    <p id="show-en" class="show-english"></p>
   </div>
-
-  <!-- FOOD -->
-  <div class="section" id="food">
-    <div class="section-title">Food & Dining</div>
-    <div class="phrases" id="phrases-food"></div>
-    <div class="tip-box">💡 The bill won't come unless you ask. Say <em>"L'addition, s'il vous plaît"</em> and make eye contact — don't wave or call out.</div>
-  </div>
-
-  <!-- DIRECTIONS -->
-  <div class="section" id="directions">
-    <div class="section-title">Getting Around</div>
-    <div class="phrases" id="phrases-directions"></div>
-    <div class="tip-box">💡 If you're lost, start with <em>"Excusez-moi"</em> and always try a little French first before switching to English.</div>
-  </div>
-
-  <!-- SHOPPING -->
-  <div class="section" id="shopping">
-    <div class="section-title">Shopping</div>
-    <div class="phrases" id="phrases-shopping"></div>
-  </div>
-
-  <!-- NUMBERS -->
-  <div class="section" id="numbers">
-    <div class="section-title">Numbers & Counting</div>
-    <div class="phrases" id="phrases-numbers"></div>
-    <div class="tip-box">💡 French uses a quirky system after 60 — 70 is <em>"soixante-dix"</em> (sixty-ten), and 80 is <em>"quatre-vingts"</em> (four-twenties). Worth knowing!</div>
-  </div>
-
-  <!-- EMERGENCY -->
-  <div class="section" id="emergency">
-    <div class="section-title">Emergency & Help</div>
-    <div class="phrases" id="phrases-emergency"></div>
-    <div class="tip-box">💡 Emergency number in France: <strong>112</strong> (EU standard). Police: <strong>17</strong>. SAMU (ambulance): <strong>15</strong>.</div>
+  <p class="voice-warn" id="show-warn" hidden></p>
+  <div class="overlay-actions">
+    <button type="button" id="show-english-btn" aria-pressed="false">Also show English</button>
+    <button type="button" id="show-close">Close</button>
   </div>
 </div>
-
 <script>
-const data = {
-  greetings: [
-    { fr: "Bonjour", pron: "bon-ZHOOR", en: "Hello / Good morning" },
-    { fr: "Bonsoir", pron: "bon-SWAHR", en: "Good evening" },
-    { fr: "Au revoir", pron: "oh ruh-VWAHR", en: "Goodbye" },
-    { fr: "Merci", pron: "mair-SEE", en: "Thank you" },
-    { fr: "Merci beaucoup", pron: "mair-SEE boh-KOO", en: "Thank you very much" },
-    { fr: "S'il vous plaît", pron: "seel voo PLAY", en: "Please" },
-    { fr: "De rien", pron: "duh ree-EN", en: "You're welcome" },
-    { fr: "Excusez-moi", pron: "ex-koo-ZAY mwah", en: "Excuse me / Sorry" },
-    { fr: "Parlez-vous anglais ?", pron: "par-LAY voo on-GLAY", en: "Do you speak English?" },
-    { fr: "Je ne comprends pas", pron: "zhuh nuh com-PROHN pah", en: "I don't understand" },
-    { fr: "Comment vous appelez-vous ?", pron: "co-MON voo za-play VOO", en: "What is your name?" },
-    { fr: "Je m'appelle...", pron: "zhuh ma-PEL", en: "My name is..." },
-    { fr: "Pardon", pron: "par-DOHN", en: "Sorry (bumping into someone)" },
-    { fr: "Désolé(e)", pron: "day-zo-LAY", en: "I'm sorry (sincere apology)" },
-    { fr: "Pouvez-vous répéter ?", pron: "poo-VAY voo ray-pay-TAY", en: "Can you repeat that?" },
-  ],
-  food: [
-    { fr: "Je voudrais réserver une table", pron: "zhuh voo-DRAY ray-zair-VAY oon TAH-bluh", en: "I'd like to reserve a table" },
-    { fr: "Une table pour deux, s'il vous plaît", pron: "oon TAH-bluh poor duh", en: "A table for two, please" },
-    { fr: "La carte, s'il vous plaît", pron: "lah KART, seel voo PLAY", en: "The menu, please" },
-    { fr: "Je voudrais...", pron: "zhuh voo-DRAY", en: "I would like..." },
-    { fr: "L'addition, s'il vous plaît", pron: "lah-dee-SYON, seel voo PLAY", en: "The bill, please" },
-    { fr: "C'est délicieux !", pron: "say day-lee-SYUH", en: "This is delicious!" },
-    { fr: "Je suis végétarien(ne)", pron: "zhuh swee vay-zhay-tah-RYEN", en: "I am vegetarian" },
-    { fr: "Sans gluten, s'il vous plaît", pron: "son gloo-TEN, seel voo PLAY", en: "Gluten-free, please" },
-    { fr: "Un café, s'il vous plaît", pron: "un ka-FAY, seel voo PLAY", en: "A coffee, please" },
-    { fr: "De l'eau, s'il vous plaît", pron: "duh LOH, seel voo PLAY", en: "Some water, please" },
-    { fr: "C'est combien ?", pron: "say com-BYEN", en: "How much is it?" },
-    { fr: "Un verre de vin rouge/blanc", pron: "un VAIR duh van ROOZH/BLON", en: "A glass of red/white wine" },
-  ],
-  directions: [
-    { fr: "Où est... ?", pron: "oo ay", en: "Where is...?" },
-    { fr: "La station de métro", pron: "lah sta-SYON duh may-TROH", en: "The metro station" },
-    { fr: "À gauche", pron: "ah GOHSH", en: "To the left" },
-    { fr: "À droite", pron: "ah DRWAHT", en: "To the right" },
-    { fr: "Tout droit", pron: "too DRWAH", en: "Straight ahead" },
-    { fr: "Près d'ici", pron: "pray dee-SEE", en: "Near here" },
-    { fr: "Loin d'ici", pron: "lwen dee-SEE", en: "Far from here" },
-    { fr: "Je suis perdu(e)", pron: "zhuh swee pair-DU", en: "I am lost" },
-    { fr: "Pouvez-vous m'aider ?", pron: "poo-VAY voo may-DAY", en: "Can you help me?" },
-    { fr: "Un billet, s'il vous plaît", pron: "un bee-YAY, seel voo PLAY", en: "A ticket, please" },
-    { fr: "Où sont les toilettes ?", pron: "oo son lay twa-LET", en: "Where are the toilets?" },
-  ],
-  shopping: [
-    { fr: "Combien ça coûte ?", pron: "com-BYEN sah KOOT", en: "How much does this cost?" },
-    { fr: "C'est trop cher", pron: "say troh SHAIR", en: "It's too expensive" },
-    { fr: "Je regarde seulement", pron: "zhuh ruh-GARD suhl-MON", en: "I'm just looking" },
-    { fr: "Avez-vous... ?", pron: "ah-VAY voo", en: "Do you have...?" },
-    { fr: "En quelle taille ?", pron: "on kel TIE", en: "In what size?" },
-    { fr: "Je vais le prendre", pron: "zhuh vay luh PRON-druh", en: "I'll take it" },
-    { fr: "Acceptez-vous les cartes ?", pron: "ak-sep-TAY voo lay KART", en: "Do you accept cards?" },
-    { fr: "Un reçu, s'il vous plaît", pron: "un ruh-SU, seel voo PLAY", en: "A receipt, please" },
-    { fr: "C'est ouvert / fermé ?", pron: "say oo-VAIR / fair-MAY", en: "Is it open / closed?" },
-    { fr: "Le wifi, c'est quoi ?", pron: "luh WEE-fee say kwah", en: "What's the wifi password?" },
-  ],
-  numbers: [
-    { fr: "Un / Une", pron: "un / oon", en: "1" },
-    { fr: "Deux", pron: "duh", en: "2" },
-    { fr: "Trois", pron: "trwah", en: "3" },
-    { fr: "Quatre", pron: "KAH-truh", en: "4" },
-    { fr: "Cinq", pron: "sank", en: "5" },
-    { fr: "Six", pron: "sees", en: "6" },
-    { fr: "Sept", pron: "set", en: "7" },
-    { fr: "Huit", pron: "weet", en: "8" },
-    { fr: "Neuf", pron: "nuhf", en: "9" },
-    { fr: "Dix", pron: "dees", en: "10" },
-    { fr: "Onze", pron: "onz", en: "11" },
-    { fr: "Douze", pron: "dooz", en: "12" },
-    { fr: "Treize", pron: "trez", en: "13" },
-    { fr: "Quatorze", pron: "ka-TORZ", en: "14" },
-    { fr: "Quinze", pron: "kanz", en: "15" },
-    { fr: "Seize", pron: "sez", en: "16" },
-    { fr: "Dix-sept", pron: "dee-SET", en: "17" },
-    { fr: "Dix-huit", pron: "dee-ZWEET", en: "18" },
-    { fr: "Dix-neuf", pron: "dee-ZNUHF", en: "19" },
-    { fr: "Vingt", pron: "van", en: "20" },
-    { fr: "Cinquante", pron: "san-KONT", en: "50" },
-    { fr: "Cent", pron: "son", en: "100" },
-  ],
-  emergency: [
-    { fr: "Au secours !", pron: "oh suh-KOOR", en: "Help!" },
-    { fr: "Appelez la police !", pron: "ah-play lah poh-LEES", en: "Call the police!" },
-    { fr: "Appelez une ambulance !", pron: "ah-play oon om-boo-LONSS", en: "Call an ambulance!" },
-    { fr: "J'ai besoin d'un médecin", pron: "zhay buh-ZWEN dun mayd-SAN", en: "I need a doctor" },
-    { fr: "Je suis allergique à...", pron: "zhuh swee ah-lair-ZHEEK ah", en: "I am allergic to..." },
-    { fr: "On m'a volé", pron: "on mah voh-LAY", en: "I've been robbed" },
-    { fr: "Où est l'hôpital ?", pron: "oo ay lo-pee-TAL", en: "Where is the hospital?" },
-  ]
-};
+const SECTIONS = [
+  ['greetings', 'Greetings', 'Greetings & Pleasantries'],
+  ['food', 'Food & Dining', 'Food & Dining'],
+  ['directions', 'Directions', 'Getting Around'],
+  ['shopping', 'Shopping', 'Shopping'],
+  ['numbers', 'Numbers', 'Numbers & Counting'],
+  ['emergency', 'Emergency', 'Emergency & Help'],
+];
 
-function buildPhrases() {
-  for (const [section, phrases] of Object.entries(data)) {
-    const container = document.getElementById(`phrases-${section}`);
-    phrases.forEach((p, i) => {
-      const card = document.createElement('div');
-      card.className = 'phrase-card';
-      card.innerHTML = `
-        <button class="play-btn" onclick="speak(this, '${p.fr.replace(/'/g, "\\'")}')">
-          <svg class="play-icon" viewBox="0 0 24 24" fill="white">
-            <path d="M8 5v14l11-7z"/>
-          </svg>
-        </button>
-        <div class="phrase-text">
-          <div class="french">${p.fr}</div>
-          <div class="pronunciation">${p.pron}</div>
-          <div class="english">${p.en}</div>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-  }
+const $ = (id) => document.getElementById(id);
+let country = null;
+let active = 'greetings';
+let showPhrase = null;
+let showOpen = false;
+let lastFocus = null;
+let speakToken = 0;
+
+function spokenText(phrase) {
+  if (phrase && phrase.speak) return String(phrase.speak).trim();
+  return String(phrase?.native || '').replace(/\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
 }
 
-function speak(btn, text) {
-  if (!('speechSynthesis' in window)) {
-    document.getElementById('noSpeech').style.display = 'block';
+function matchVoice(voices, lang) {
+  if (!lang) return null;
+  const want = String(lang).toLowerCase();
+  const norm = (voice) => String(voice.lang || '').toLowerCase().replace(/_/g, '-');
+  return (voices || []).find((voice) => norm(voice) === want)
+    || (voices || []).find((voice) => norm(voice).split('-')[0] === want)
+    || null;
+}
+
+function voiceRequest() {
+  const code = String(country?.langCode || 'fr-FR');
+  return { lang: code.split('-')[0].toLowerCase(), label: country?.voiceLabel || 'French' };
+}
+
+function telHref(tel) {
+  const raw = String(tel || '').trim();
+  if (!/^\+?\d{2,6}$/.test(raw)) return null;
+  return `tel:${raw}`;
+}
+
+function fold(value) {
+  return String(value || '').toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+}
+
+function rich(parent, html) {
+  const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+  const walk = (node, target) => {
+    node.childNodes.forEach((child) => {
+      if (child.nodeType === Node.TEXT_NODE) target.append(document.createTextNode(child.textContent));
+      else if (child.nodeType === Node.ELEMENT_NODE && (child.tagName === 'EM' || child.tagName === 'STRONG')) {
+        const next = document.createElement(child.tagName.toLowerCase());
+        walk(child, next);
+        target.append(next);
+      } else if (child.nodeType === Node.ELEMENT_NODE) walk(child, target);
+    });
+  };
+  walk(doc.body, parent);
+}
+
+function playIcon() {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.classList.add('play-icon');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', 'M8 5v14l11-7z');
+  path.setAttribute('fill', 'currentColor');
+  svg.append(path);
+  return svg;
+}
+
+function loadVoices() {
+  if (!window.speechSynthesis) return Promise.resolve([]);
+  const existing = speechSynthesis.getVoices();
+  if (existing.length) return Promise.resolve(existing);
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      resolve(speechSynthesis.getVoices());
+    };
+    speechSynthesis.addEventListener('voiceschanged', finish, { once: true });
+    window.setTimeout(finish, 800);
+  });
+}
+
+function cancelSpeech() {
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  document.querySelectorAll('.speaking').forEach((node) => node.classList.remove('speaking'));
+  document.querySelectorAll('.play-status').forEach((node) => { node.textContent = ''; });
+  document.querySelectorAll('.play-btn').forEach((node) => {
+    if (node.dataset.label) node.setAttribute('aria-label', node.dataset.label);
+  });
+}
+
+function emergencyLabel(number) {
+  if (number.tel === '112') return 'Emergency 112';
+  return `${number.tel} ${String(number.name || '').toLowerCase()}`;
+}
+
+function renderEmergency() {
+  const bar = $('emergency-bar');
+  const links = [];
+  (country.emergencyNumbers || []).forEach((number) => {
+    const href = telHref(number.tel);
+    if (!href) return;
+    const link = document.createElement('a');
+    link.href = href;
+    link.textContent = emergencyLabel(number);
+    link.setAttribute('aria-label', `Call ${link.textContent}`);
+    if (number.tel === '112') link.className = 'em-main';
+    links.push(link);
+  });
+  if (links.length) bar.replaceChildren(...links);
+}
+
+function phraseCard(phrase) {
+  const card = document.createElement('article');
+  card.className = 'phrase-card';
+  const said = spokenText(phrase);
+
+  const play = document.createElement('button');
+  play.type = 'button';
+  play.className = 'play-btn';
+  play.dataset.label = `Play ${said}`;
+  play.setAttribute('aria-label', play.dataset.label);
+  play.append(playIcon());
+
+  const hit = document.createElement('button');
+  hit.type = 'button';
+  hit.className = 'phrase-hit';
+  const french = document.createElement('span');
+  french.className = 'french';
+  french.lang = 'fr';
+  french.textContent = phrase.native;
+  const pron = document.createElement('span');
+  pron.className = 'pronunciation';
+  pron.textContent = phrase.pron;
+  const english = document.createElement('span');
+  english.className = 'english';
+  english.textContent = phrase.en;
+  hit.append(french, pron, english);
+
+  const actions = document.createElement('div');
+  actions.className = 'card-actions';
+  const status = document.createElement('span');
+  status.className = 'play-status';
+  const slow = document.createElement('button');
+  slow.type = 'button';
+  slow.className = 'text-btn';
+  slow.textContent = 'Slower';
+  slow.setAttribute('aria-pressed', 'false');
+  const show = document.createElement('button');
+  show.type = 'button';
+  show.className = 'text-btn';
+  show.textContent = 'Show';
+  show.setAttribute('aria-label', `Show ${phrase.native}`);
+  actions.append(status, slow, show);
+
+  const warn = document.createElement('p');
+  warn.className = 'voice-warn';
+  warn.hidden = true;
+
+  card.append(play, hit, actions, warn);
+  const playNow = () => speakPhrase(phrase, card);
+  play.addEventListener('click', playNow);
+  hit.addEventListener('click', playNow);
+  slow.addEventListener('click', () => {
+    const on = card.dataset.slow !== '1';
+    card.dataset.slow = on ? '1' : '0';
+    slow.setAttribute('aria-pressed', String(on));
+    slow.textContent = on ? 'Normal speed' : 'Slower';
+    if (card.classList.contains('speaking')) playNow();
+  });
+  show.addEventListener('click', () => openShow(phrase));
+  card.addEventListener('click', (event) => {
+    if (event.target.closest('.text-btn') || event.target.closest('button')) return;
+    playNow();
+  });
+  return card;
+}
+
+function render() {
+  const list = $('phrase-list');
+  const title = $('section-title');
+  const tip = $('tip');
+  const empty = $('empty');
+  const query = $('search').value.trim();
+  list.replaceChildren();
+  tip.replaceChildren();
+  tip.hidden = true;
+  empty.hidden = true;
+
+  const titles = Object.fromEntries(SECTIONS.map(([id, , long]) => [id, long]));
+  if (query) {
+    title.textContent = 'Results';
+    document.querySelectorAll('.tab').forEach((tab) => tab.removeAttribute('aria-current'));
+    const q = fold(query);
+    let count = 0;
+    SECTIONS.forEach(([id, short]) => {
+      const matches = (country.phrases[id] || []).filter((phrase) =>
+        fold(phrase.native).includes(q) || fold(phrase.pron).includes(q) || fold(phrase.en).includes(q));
+      if (!matches.length) return;
+      const heading = document.createElement('h3');
+      heading.className = 'result-label';
+      heading.textContent = short;
+      list.append(heading);
+      matches.forEach((phrase) => { list.append(phraseCard(phrase)); count += 1; });
+    });
+    empty.hidden = count > 0;
     return;
   }
-  window.speechSynthesis.cancel();
-  document.querySelectorAll('.play-btn').forEach(b => b.classList.remove('speaking'));
 
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = 'fr-FR';
-  utter.rate = 0.85;
-
-  // Try to find a French voice
-  const voices = window.speechSynthesis.getVoices();
-  const frVoice = voices.find(v => v.lang.startsWith('fr'));
-  if (frVoice) utter.voice = frVoice;
-
-  btn.classList.add('speaking');
-  utter.onend = () => btn.classList.remove('speaking');
-  utter.onerror = () => btn.classList.remove('speaking');
-
-  window.speechSynthesis.speak(utter);
+  title.textContent = titles[active] || '';
+  document.querySelectorAll('.tab').forEach((tab) => {
+    if (tab.dataset.section === active) tab.setAttribute('aria-current', 'true');
+    else tab.removeAttribute('aria-current');
+  });
+  (country.phrases[active] || []).forEach((phrase) => list.append(phraseCard(phrase)));
+  if (country.tips?.[active]) {
+    tip.hidden = false;
+    rich(tip, country.tips[active]);
+  }
 }
 
-function showSection(id, e) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  e.target.classList.add('active');
+function buildTabs() {
+  const nav = $('categories');
+  nav.replaceChildren();
+  SECTIONS.forEach(([id, short]) => {
+    if (!country.phrases[id]) return;
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className = 'tab';
+    tab.dataset.section = id;
+    tab.textContent = short;
+    if (id === active) tab.setAttribute('aria-current', 'true');
+    tab.addEventListener('click', () => {
+      active = id;
+      $('search').value = '';
+      cancelSpeech();
+      render();
+      $('section-title').focus();
+    });
+    nav.append(tab);
+  });
 }
 
-// Voices load async in some browsers
-window.speechSynthesis.onvoiceschanged = () => {};
-buildPhrases();
+async function speakPhrase(phrase, card) {
+  const request = voiceRequest();
+  const warn = card.querySelector('.voice-warn');
+  const status = card.querySelector('.play-status');
+  const play = card.querySelector('.play-btn');
+  const fail = (message) => {
+    card.classList.remove('speaking');
+    if (status) status.textContent = '';
+    if (play?.dataset.label) play.setAttribute('aria-label', play.dataset.label);
+    if (warn) {
+      warn.hidden = false;
+      warn.textContent = message;
+    }
+    const banner = $('voice-banner');
+    banner.hidden = false;
+    banner.textContent = message;
+  };
+  if (!window.speechSynthesis) {
+    return fail('This browser can\u2019t speak aloud. Read the pronunciation line.');
+  }
+  const voice = matchVoice(await loadVoices(), request.lang);
+  if (!voice) return fail(`No ${request.label} voice on this phone \u2014 read the pronunciation.`);
+  if (warn) warn.hidden = true;
+  $('voice-banner').hidden = true;
+  const token = ++speakToken;
+  cancelSpeech();
+  const utter = new SpeechSynthesisUtterance(spokenText(phrase));
+  utter.lang = voice.lang;
+  utter.voice = voice;
+  utter.rate = card.dataset.slow === '1' ? 0.65 : 0.85;
+  card.classList.add('speaking');
+  if (status) status.textContent = 'Playing';
+  if (play) play.setAttribute('aria-label', `Playing ${spokenText(phrase)}`);
+  const done = () => {
+    if (token !== speakToken) return;
+    card.classList.remove('speaking');
+    if (status) status.textContent = '';
+    if (play?.dataset.label) play.setAttribute('aria-label', play.dataset.label);
+  };
+  utter.onend = done;
+  utter.onerror = done;
+  speechSynthesis.speak(utter);
+}
+
+function hideShow() {
+  $('show-overlay').hidden = true;
+  document.body.classList.remove('show-open');
+  cancelSpeech();
+  if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
+}
+
+function requestClose() {
+  if (showOpen) {
+    showOpen = false;
+    history.back();
+  } else hideShow();
+}
+
+function openShow(phrase) {
+  showPhrase = phrase;
+  $('show-french').textContent = phrase.native;
+  $('show-pron').textContent = phrase.pron;
+  $('show-en').textContent = phrase.en;
+  $('show-extra').hidden = true;
+  $('show-english-btn').setAttribute('aria-pressed', 'false');
+  $('show-warn').hidden = true;
+  const play = $('show-play');
+  play.dataset.label = `Play ${spokenText(phrase)}`;
+  play.setAttribute('aria-label', play.dataset.label);
+  lastFocus = document.activeElement;
+  $('show-overlay').hidden = false;
+  document.body.classList.add('show-open');
+  if (!showOpen) {
+    history.pushState({ show: true }, '');
+    showOpen = true;
+  }
+  $('show-overlay').focus();
+}
+
+function focusables(root) {
+  return [...root.querySelectorAll('a[href], button, input')].filter((node) => !node.closest('[hidden]') && !node.disabled);
+}
+
+function registerWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then((reg) => {
+      const show = () => { $('update-banner').hidden = false; };
+      if (reg.waiting && navigator.serviceWorker.controller) show();
+      reg.addEventListener('updatefound', () => {
+        const worker = reg.installing;
+        worker?.addEventListener('statechange', () => {
+          if (worker.state === 'installed' && navigator.serviceWorker.controller) show();
+        });
+      });
+    }).catch(() => {});
+  });
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloading) return;
+    reloading = true;
+    location.reload();
+  });
+  $('update-reload').addEventListener('click', () => {
+    navigator.serviceWorker.getRegistration().then((reg) => {
+      reg?.waiting?.postMessage('skip-waiting');
+    });
+  });
+}
+
+$('search-form').addEventListener('submit', (event) => event.preventDefault());
+$('search').addEventListener('input', () => { cancelSpeech(); render(); });
+$('show-play').addEventListener('click', () => { if (showPhrase) speakPhrase(showPhrase, $('show-overlay')); });
+$('show-english-btn').addEventListener('click', () => {
+  const extra = $('show-extra');
+  const show = extra.hidden;
+  extra.hidden = !show;
+  $('show-english-btn').setAttribute('aria-pressed', String(show));
+});
+$('show-close').addEventListener('click', requestClose);
+$('show-overlay').addEventListener('click', (event) => {
+  if (event.target === $('show-overlay')) requestClose();
+});
+document.addEventListener('keydown', (event) => {
+  if ($('show-overlay').hidden) return;
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    requestClose();
+    return;
+  }
+  if (event.key !== 'Tab') return;
+  const nodes = focusables($('show-overlay'));
+  if (!nodes.length) return;
+  const first = nodes[0];
+  const last = nodes[nodes.length - 1];
+  const overlay = $('show-overlay');
+  if (event.shiftKey && (document.activeElement === first || document.activeElement === overlay)) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+});
+window.addEventListener('popstate', () => {
+  showOpen = false;
+  if (!$('show-overlay').hidden) hideShow();
+});
+
+async function init() {
+  registerWorker();
+  if (!window.speechSynthesis) {
+    $('voice-banner').hidden = false;
+    $('voice-banner').textContent = 'This browser can\u2019t speak aloud. Read the pronunciation line.';
+  } else {
+    loadVoices();
+  }
+  try {
+    const response = await fetch('/data/france.json');
+    if (!response.ok) throw new Error(String(response.status));
+    country = await response.json();
+  } catch {
+    $('load-error').hidden = false;
+    return;
+  }
+  renderEmergency();
+  buildTabs();
+  render();
+}
+
+init();
 </script>
 </body>
 </html>
