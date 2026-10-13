@@ -1,0 +1,13 @@
+{
+  "name": "Paris Phrasebook",
+  "short_name": "Paris",
+  "description": "French phrases for Paris, with pronunciation and emergency numbers you can call. Works offline.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f0e8",
+  "theme_color": "#c0392b",
+  "lang": "en",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
